@@ -15,10 +15,6 @@
 ArrayList<PVector> snake = new ArrayList<PVector>(); // snake body (not included the head)
 PVector pos; // snake position (position of the head)
 
-StringList mode_list = new StringList(new String[] {"border", "no_border"}); // if you implement both functionalities
-int mode_pos = 1; // mode 1 by default - if hits wall wraps around
-String actual_mode = mode_list.get(mode_pos); // current mode name
-
 PVector food; // food position
 
 PVector dir = new PVector(0, 0); // snake direction (up, down, left right)
@@ -28,6 +24,8 @@ int w, h; // how many snakes can be allocated
 
 int spd = 20; // reverse speed (smaller spd will make the snake move faster)
 int len = 4; // snake body
+
+String actual_mode = "no_border"; // define the mode (either "no_border" or "border")
 
 void setup() {
   size(1080, 720);
@@ -54,38 +52,71 @@ void draw() {
 
 // draw the food item (square) which size is tha variable size
 void drawFood() {
-  // YOUR CODE HERE
+  fill(255, 0, 0); // red
+  rect(food.x*size, food.y*size, size, size); 
 }
 
 // declare a new pVector (random) for food
 void newFood() {
-  //food = new PVector......
+  food = new PVector(floor(random(w)), floor(random(h)));
 }
 
 // draw snake, consider the snake array size (each square of size size) + square of the current pos
 void drawSnake() {
-  /// YOUR CODE HERE
+  fill(0, 255, 0); // green
+  
+  // Draw each segment of the snake body
+  for(int i=0; i<snake.size(); i++) {
+    rect(snake.get(i).x*size, snake.get(i).y*size, size, size); 
+  }
+  
+  // Draw the snake head
+  rect(pos.x*size, pos.y*size, size, size); 
 }
 
 void updateSnake() {
   // Add current position(head) to snake ArrayList
+  snake.add(pos.copy());
   
   // Check the size of snake. Remove some items from snake ArrayList if needed
+  while (snake.size() > len) {
+    snake.remove(0);
+  }
   
   // Calculate new position of snake (head). You must use the direction vector for this calculation
+  pos.add(dir);
   
   // If snake (head) hits food, add +1 to the snake size and create a new food
+  if (pos.equals(food)) {
+    len++;
+    spd -= 1;
+    newFood();
+  }
   
   // If snake (head) eat itself, gameover, reset()
+  for (int i = 0; i < snake.size() - 1; i++) {
+    if (pos.equals(snake.get(i))) {
+      reset();
+    }
+  }
   
   // If mode 'no_border', snake is out of screen, wraps around
   // If mode 'border', when snake hit a border, gameover, reset()
-  
+  if (actual_mode == "no_border") {
+    if (pos.x > w - 1) pos.x = 0;
+    if (pos.x < 0) pos.x = w - 1;
+    if (pos.y > h - 1) pos.y = 0;
+    if (pos.y < 0) pos.y = h - 1;
+  } else if (actual_mode == "border") {
+    if (pos.x > w - 1 || pos.x < 0 || pos.y > h - 1 || pos.y < 0) {
+      reset();
+    }
+  }
 }
 
 void reset() {
   spd = 20;
-  len = 5;
+  len = 4;
   pos = new PVector(w/2, h/2);
   dir = new PVector(0, 0);
   newFood();
@@ -93,13 +124,15 @@ void reset() {
 }
 
 void keyPressed() {
-  // if UP is pressed => dir = new PVector(...)
-  // same thing for DOWN, LEFT, RIGHT
-  // UP (0, -1)
-  // DOWN(0, 1)
-  // LEFT(-1,0)
-  // RIGHT(1,0)
-  
+  if (keyCode == UP) {
+    if (dir.y != 1) dir = new PVector(0, -1);
+  } else if (keyCode == DOWN) {
+    if (dir.y != -1) dir = new PVector(0, 1);
+  } else if (keyCode == LEFT) {
+    if (dir.x != 1) dir = new PVector(-1, 0);
+  } else if (keyCode == RIGHT) {
+    if (dir.x != -1) dir = new PVector(1, 0);
+  }
 }
 
 // EXTRA FOR STUDENTS WHO FINISH WITH THE REQUIRED TASKS
